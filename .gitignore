@@ -1,0 +1,45 @@
+# ----------------------
+# Python
+# ----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.*
+
+# ----------------------
+# Django
+# ----------------------
+*.log
+*.pot
+*.pyc
+
+# SQLite database
+db.sqlite3
+db.sqlite3-journal
+
+# Media & Static (if generated)
+media/
+staticfiles/
+
+# Django migrations cache
+*.mo
+
+# ----------------------
+# VS Code (optional but recommended)
+# ----------------------
+.vscode/
+
+# ----------------------
+# OS files
+# ----------------------
+.DS_Store
+Thumbs.db
