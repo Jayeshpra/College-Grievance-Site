@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../styles/Login.css"; // We can reuse your Login CSS!
+import "../styles/Login.css";
 
 function Register() {
   const navigate = useNavigate();
 
+  const [role, setRole] = useState("STUDENT");
+  const [department, setDepartment] = useState("Not selected");
+
   const [formData, setFormData] = useState({
-    username: "",
+    full_name: "",
     email: "",
     phone_number: "",
     password: "",
@@ -24,17 +27,12 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Prepare the data payload (Adjust keys based on your Django Serializer)
     const payload = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        role: "STUDENT", // Hardcode this since it's a student register page
-        profile: {
-            phone_number: formData.phone_number,
-            department: formData.department,
-            enrollment_no: formData.enrollment_no
-        }
+      ...formData,
+      role: role,
+      department: department,
+      // Only send enrollment_no if student
+      ...(role !== "STUDENT" && { enrollment_no: null })
     };
 
     try {
@@ -46,89 +44,83 @@ function Register() {
         body: JSON.stringify(payload)
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        alert("Registration Successful! Please Login.");
+        alert("Registration successful");
         navigate("/login");
       } else {
-        const errorData = await response.json();
-        alert("Registration failed: " + JSON.stringify(errorData));
+        alert("Error: " + JSON.stringify(data));
       }
 
     } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong");
+      alert("Server error");
     }
   };
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit} style={{ width: '400px' }}>
-        <h2>Student Registration</h2>
+      <form className="login-form" onSubmit={handleSubmit} style={{ width: "400px" }}>
+        <h2>Grievance System Register</h2>
 
-        {/* --- USERNAME --- */}
+        {/* ROLE */}
         <div className="input-group">
-          <input
-            type="text"
-            name="username"
-            placeholder=" "
-            onChange={handleChange}
-            required
-          />
-          <label>Username</label>
+          <label>Register as {role}</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="STUDENT">Student</option>
+            <option value="FACULTY">Faculty</option>
+            <option value="STAFF">Staff</option>
+          </select>
         </div>
 
-        {/* --- EMAIL --- */}
+        {/* FULL NAME */}
         <div className="input-group">
-          <input
-            type="email"
-            name="email"
-            placeholder=" "
-            onChange={handleChange}
-            required
-          />
-          <label>Email Address</label>
+          <input type="text" name="full_name" placeholder=" " onChange={handleChange} required />
+          <label>Full Name</label>
         </div>
 
-        {/* --- PHONE NUMBER --- */}
+        {/* EMAIL */}
         <div className="input-group">
-          <input
-            type="tel"
-            name="phone_number"
-            placeholder=" "
-            onChange={handleChange}
-            required
-            pattern="[0-9]{10}" // Simple validation for 10 digits
-          />
+          <input type="email" name="email" placeholder=" " onChange={handleChange} required />
+          <label>Email</label>
+        </div>
+
+        {/* PHONE */}
+        <div className="input-group">
+          <input type="tel" name="phone_number" placeholder=" " onChange={handleChange} required />
           <label>Phone Number</label>
         </div>
 
-        {/* --- ENROLLMENT NUMBER --- */}
+        {/* ENROLLMENT (ONLY STUDENT) */}
+        {role === "STUDENT" && (
+          <div className="input-group">
+            <input type="text" name="enrollment_no" placeholder=" " onChange={handleChange} required />
+            <label>Enrollment No</label>
+          </div>
+        )}
+
         <div className="input-group">
-          <input
-            type="text"
-            name="enrollment_no"
-            placeholder=" "
-            onChange={handleChange}
-            required
-          />
-          <label>Enrollment No.</label>
+          <label>Department: {department}</label>
+          <select name="department" value={department} onChange={(e) => setDepartment(e.target.value)} required>
+            <option value="">Select Department</option>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Electronics & Communication">Electronics & Communication</option>
+          </select>
         </div>
 
-        {/* --- PASSWORD --- */}
+        {/* PASSWORD */}
         <div className="input-group">
-          <input
-            type="password"
-            name="password"
-            placeholder=" "
-            onChange={handleChange}
-            required
-          />
+          <input type="password" name="password" placeholder=" " onChange={handleChange} required />
           <label>Password</label>
         </div>
 
         <button type="submit" className="register-btn">Register</button>
-        
-        <p style={{ marginTop: '15px', textAlign: 'center' }}>
+
+        <p style={{ marginTop: "15px", textAlign: "center" }}>
           Already have an account? <Link to="/login">Login here</Link>
         </p>
       </form>

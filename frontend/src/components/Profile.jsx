@@ -1,0 +1,192 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/Profile.css";
+
+function Profile() {
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
+  const [tempUser, setTempUser] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+
+  const token = localStorage.getItem("token");
+
+  // 🔥 FETCH PROFILE
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const res = await fetch("http://127.0.0.1:8000/api/profile/", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setUser(data);
+        setTempUser(data);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (!user) return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
+
+  // 🔥 HANDLE INPUT
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setTempUser({ ...tempUser, [name]: value });
+  };
+
+  const handleEditClick = () => {
+    setTempUser({ ...user });
+    setIsEditing(true);
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+  };
+
+  // 🔥 SAVE TO DATABASE
+  const handleSaveClick = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/profile/update/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(tempUser)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Profile updated successfully ✅");
+
+        setUser({ ...tempUser });
+        setIsEditing(false);
+
+        // 🔥 Update localStorage too
+        localStorage.setItem("full_name", tempUser.full_name);
+        localStorage.setItem("department", tempUser.department);
+
+      } else {
+        alert("Error: " + JSON.stringify(data));
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Server error ❌");
+    }
+  };
+
+  return (
+    <div className="prof-page-container">
+
+      <nav className="prof-side-nav">
+        <div className="prof-logo-section">Grievance Portal LDCE</div>
+        <button onClick={() => navigate(-1)} className="prof-back-btn">
+          ← Back
+        </button>
+      </nav>
+
+      <div className="prof-main-content">
+        <div className="prof-card">
+
+          <div className="prof-header-bg"></div>
+
+          <div className="prof-info-section">
+
+            <div className="prof-avatar">
+              {user.full_name?.charAt(0)}
+            </div>
+
+            <div className="prof-details-header">
+              {isEditing ? (
+                <input
+                  name="full_name"
+                  value={tempUser.full_name}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                <h1>{user.full_name}</h1>
+              )}
+              <span className="prof-badge">{user.role}</span>
+            </div>
+
+            <div className="prof-grid">
+
+              <div className="prof-item">
+                <label>Email</label>
+                <p>{user.email}</p>
+              </div>
+
+              <div className="prof-item">
+                <label>Phone</label>
+                {isEditing ? (
+                  <input
+                    name="phone_number"
+                    value={tempUser.phone_number || ""}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  <p>{user.phone_number}</p>
+                )}
+              </div>
+
+              <div className="prof-item">
+                <label>Department</label>
+                {isEditing ? (
+                  <select
+                    name="department"
+                    value={tempUser.department}
+                    onChange={handleInputChange}
+                    className="prof-edit-select"
+                  >
+                    <option value="Computer Engineering">Computer Engineering</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Electronics & Communication">Electronics & Communication</option>
+                  </select>
+                ) : (
+                  <p>{user.department}</p>
+                )}
+              </div>
+
+              <div className="prof-item">
+                <label>Joined</label>
+                <p>{new Date(user.date_joined).toDateString()}</p>
+              </div>
+
+              {user.role === "STUDENT" && (
+                <div className="prof-item">
+                  <label>Enrollment No</label>
+                  <p>{user.enrollment_no}</p>
+                </div>
+              )}
+
+            </div>
+
+            <div className="prof-actions">
+              {isEditing ? (
+                <>
+                  <button onClick={handleSaveClick}>Save</button>
+                  <button onClick={handleCancelClick}>Cancel</button>
+                </>
+              ) : (
+                <button onClick={handleEditClick}>Edit Profile</button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Profile;

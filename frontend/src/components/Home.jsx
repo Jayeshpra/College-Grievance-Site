@@ -1,31 +1,89 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Home.css";
-import logo from "../assets/logo.png"
+import logo from "../assets/logo.png";
 
 function Home() {
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role")?.toUpperCase().trim();
+
+  const handleProtectedRoute = (type) => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (role === "FACULTY") {
+      if (type === "submit") {
+        navigate("/add-complaint");  
+      } else {
+        navigate("/fac-dashboard");   
+      }
+      return;
+    }
+
+    if (type === "submit") {
+      navigate("/add-complaint");
+    } else if (type === "status") {
+      navigate("/dashboard");
+    } else if (type === "profile") {
+      navigate("/profile");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
+    navigate("/");
+    window.location.reload();
+  };
+
   return (
     <div className="home-container">
 
       {/* ================= NAVBAR ================= */}
       <nav className="navbar">
         <div style={{ display: "flex", alignItems: "center" }}>
-          <img src={logo} alt="img" style={{ width: '70px' }} />
+          <img src={logo} alt="img" style={{ width: "70px" }} />
           <div className="logo">L. D. College of Engineering</div>
         </div>
+
         <div className="nav-right">
-          <input
-            type="text"
-            placeholder="Enter Grievance ID"
-            className="search-input"
-          />
-          <Link to="/login">
-            <button className="nav-btn home-login-btn">Login</button>
+
+          {!token ? (
+            <>
+              <Link to="/login">
+                <button className="nav-btn home-login-btn">Login</button>
+              </Link>
+
+              <Link to="/register">
+                <button className="nav-btn home-register-btn">Register</button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <button
+                className="nav-btn home-login-btn"
+                onClick={() => handleProtectedRoute("profile")}
+              >
+                Profile
+              </button>
+
+              <button
+                className="nav-btn home-register-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          )}
+
+          <Link to="/about">
+            <button className="nav-btn home-about-btn">About</button>
           </Link>
-          <Link to='/register'>
-            <button className="nav-btn home-register-btn">Register</button>
-          </Link>
-          <button className="nav-btn home-about-btn">About</button>
+
         </div>
       </nav>
 
@@ -38,8 +96,21 @@ function Home() {
         </p>
 
         <div className="hero-buttons">
-          <button className="primary-btn">Submit Grievance</button>
-          <button className="secondary-btn">Check Status</button>
+
+          <button
+            className="primary-btn"
+            onClick={() => handleProtectedRoute("submit")}
+          >
+            Submit Grievance
+          </button>
+
+          <button
+            className="secondary-btn"
+            onClick={() => handleProtectedRoute("status")}
+          >
+            Check Status
+          </button>
+
         </div>
       </section>
 

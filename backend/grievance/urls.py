@@ -1,7 +1,21 @@
 from django.urls import path
-from .views import GrievanceListCreateView, StudentRegisterView
+from .views import *
 
 urlpatterns = [
-    path('grievances/', GrievanceListCreateView.as_view(), name='grievance-list-create'),
-    path('register/student/', StudentRegisterView.as_view(), name='student-register'),
+
+    # AUTH
+    path('register/', register_user),
+    path('login/', login_user),
+    path('profile/', get_profile),
+    path('profile/update/', update_profile),
+
+    # DASHBOARDS
+    path('student/dashboard/', student_dashboard),
+    path('faculty/dashboard/', faculty_dashboard),
+    path('admin/dashboard/', admin_dashboard),
+
+    # GRIEVANCE
+    path('grievance/create/', create_grievance),
+    path('grievance/assign/<int:grievance_id>/', assign_grievance),
+    path('grievance/update/<int:grievance_id>/', update_status),
 ]
