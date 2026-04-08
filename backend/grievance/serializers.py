@@ -21,7 +21,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         role = data.get('role')
 
-        # If STUDENT → enrollment_no required
+        if role == 'ADMIN':
+            raise serializers.ValidationError({
+                "role": "Admin cannot be registered"
+            })
+
         if role == 'STUDENT' and not data.get('enrollment_no'):
             raise serializers.ValidationError({
                 "enrollment_no": "Enrollment number is required for students"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminDashboard.css";
 import logo from "../assets/logo.png"
@@ -6,13 +6,29 @@ import logo from "../assets/logo.png"
 function AdminDashboard() {
     const navigate = useNavigate();
 
-    // 1. Mock Data for Grievances
-    const [grievances, setGrievances] = useState([
-        { id: "GR-2024-001", title: "Water Leakage in Block A", user: "Jayesh (Student)", dept: "Maintenance", date: "2026-03-10", status: "New", desc: "The main pipe in the corridor is leaking since morning.", image: null, assignedTo: "-" },
-        { id: "GR-2024-002", title: "Projector Not Working", user: "Prof. Verma (Faculty)", dept: "IT Support", date: "2026-03-09", status: "In Progress", desc: "HDMI port seems loose in Room 402.", image: "projector.jpg", assignedTo: "Tech Team A" },
-        { id: "GR-2024-002", title: "Projector Not Working", user: "Prof. Verma (Faculty)", dept: "IT Support", date: "2026-03-09", status: "Assigned", desc: "HDMI port seems loose in Room 402.", image: "projector.jpg", assignedTo: "Tech Team A" },
-        { id: "GR-2024-003", title: "Hostel Food Quality", user: "Amit (Student)", dept: "Hostel", date: "2026-03-08", status: "Resolved", desc: "The dinner quality has degraded significantly.", image: null, assignedTo: "Warden Office" },
-    ]);
+    const [grievances, setGrievances] = useState([]);
+    const token = localStorage.getItem("token");
+
+    const fetchGrievances = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/admin/grievances/", {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setGrievances(data);
+            } else {
+                console.error("Error:", data);
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    };
 
     // 2. Mock Faculty List for Assignment
     const facultyList = [
@@ -103,10 +119,11 @@ function AdminDashboard() {
                             {grievances.map(g => (
                                 <tr key={g.id}>
                                     <td><strong>{g.id}</strong></td>
-                                    <td>{g.title}</td>
-                                    <td>{g.assignedTo}</td>
-                                    <td>{g.date}</td>
-                                    <td><span className={`adm-badge ${g.status.toLowerCase().replace(" ", "")}`}>{g.status}</span></td>
+                                    <td>{g.submitted_by_name}</td>
+                                    <td>{g.title || g.subject}</td>
+                                    <td>{g.assigned_to || "-"}</td>
+                                    <td>{new Date(g.created_at).toLocaleDateString()}</td>
+                                    <td><span className={`adm-badge ${g.status.toLowerCase()}`}>{g.status}</span></td>
                                     <td>
                                         <button className="adm-view-btn" onClick={() => setSelectedGrievance(g)}>View Details</button>
                                     </td>

@@ -18,4 +18,5 @@ urlpatterns = [
     path('grievance/create/', create_grievance),
     path('grievance/assign/<int:grievance_id>/', assign_grievance),
     path('grievance/update/<int:grievance_id>/', update_status),
+    path('admin/grievances/', get_all_grievances),
 ]

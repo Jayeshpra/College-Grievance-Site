@@ -23,6 +23,15 @@ function Home() {
       return;
     }
 
+    if (role === "ADMIN") {
+      if (type === "submit") {
+        navigate("/add-complaint")
+      } else {
+        navigate("/admin-dashboard")
+      }
+      return;
+    }
+
     if (type === "submit") {
       navigate("/add-complaint");
     } else if (type === "status") {

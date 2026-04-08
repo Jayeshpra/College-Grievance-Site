@@ -222,3 +222,30 @@ def update_profile(request):
         "phone_number": user.phone_number,
         "department": user.department
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_grievances(request):
+    # Only admin should access
+    if request.user.role != "ADMIN":
+        return Response({"error": "Unauthorized"}, status=403)
+
+    grievances = Grievance.objects.all().order_by('-created_at')
+    serializer = GrievanceSerializer(grievances, many=True)
+
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def assign_grievance(request, id):
+    if request.user.role != "ADMIN":
+        return Response({"error": "Unauthorized"}, status=403)
+
+    grievance = Grievance.objects.get(id=id)
+    grievance.assigned_to = request.data.get("faculty")
+    grievance.status = "ASSIGNED"
+    grievance.save()
+
+    return Response({"message": "Assigned successfully"})

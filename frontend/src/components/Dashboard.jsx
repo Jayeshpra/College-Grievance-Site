@@ -16,7 +16,6 @@ function UserDashboard() {
 
     const token = localStorage.getItem("token");
 
-    // 🔥 FETCH DATA FROM BACKEND
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
